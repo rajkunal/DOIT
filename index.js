@@ -12,9 +12,9 @@ const todos = [];
 //   "task" : "string",
 //   "priority" : "string",
 //   "due_date" : "string",
-//   "completed" : "boolean",
+//   "done" : "boolean",
 //   "added_date" : "string",
-//   "tags" : "string"    personal/work 
+//   "tags" : "string"   
 // }
 
 const todosPath = path.join(require('os').homedir(), 'todos.json');
@@ -31,11 +31,12 @@ program
   .option('-p, --priority <priority>', 'Priority of the task (e.g., low, medium, high)')
   .option('-c, --completeBy <completeBy>','Completion date for the task')
   .action((task , op) => {
+    const options = { timeZone: 'Asia/Kolkata' }; // Putting IST timezone
     loadTodos();
     var task = {
       task : task,
-      completed : false,
-      added_date : new Date().toISOString(),
+      done : false,
+      added_date : new Date().toLocaleDateString('en-US',options),
       priority : op.priority || 'medium',
       tags : op.tag || 'general',
       due_date : op.completeBy || null
@@ -45,7 +46,7 @@ program
     saveTodos(todos);
   });
 
-// List command
+// List/Filtered list based on tags
 program
   .command('list')
   .description('List all tasks')
@@ -60,8 +61,8 @@ program
       return;
     }
     todoList.forEach((todo, index) => {
-      const status = todo.completed ? chalk.green('✓') : chalk.red('✗');
-      console.log(`${index + 1}. ${todo.task} [${status}]`);
+      const status = todo.done ? chalk.green('✓') : chalk.red('✗');
+      console.log(`${index + 1}. Task = ${chalk.blue(todo.task)} | priority = ${chalk.blue(todo.priority)} | createDate = ${chalk.blue(todo.added_date)} | tag = ${chalk.blue(todo.tags)} | last-date = ${chalk.blue(todo.due_date)} | status = [${status}]  `);
     });
   });
 
@@ -102,20 +103,23 @@ program
   .option('-t, --tags <new tag>','Edit the tag')
   .option('-task, --task <new task>', 'Edit the task')
   .option('-p, --priority <priority>' , 'Edit the priority')
+  .option('-c, --complete <index>','Edit task status by index')
+  .option('-d, --date <index>','Edit due date for a task by index (mm/dd/yyyy)')
   .action((index, op) => {
-    console.log(index);
     loadTodos();
-    if (index > 0 && index <= todos.length) {
-      item  = todos[index];
-      console.log(item);
-      item.tags = op.tags;
-      item.task = op.task;
-      item.priority = op.priority;
-      todos[index] = item;
+    if (index > 0 && index <= todos.length && ( op.tags || op.priority || op.task || op.complete || op.date)) {
+      item  = todos[index-1];
+      item.tags = op.tags ? op.tags : item.tags; 
+      item.task = op.task ? op.task : item.task;
+      item.priority = op.priority ? op.priority : item.priority;
+      item.done = op.complete == undefined ? item.done : op.complete;
+      item.due_date = op.date ? op.date : item.date;
+
+      todos[index-1] = item;
       saveTodos(todos);
     }
     else {
-      console.log(chalk.red('No tasks found at entered index'))
+      console.log((op.tags || op.priority || op.task || op.complete == undefined || op.date)? chalk.red('No tasks found at entered index') : chalk.red('Invalid action'));
     }
   });
 
@@ -133,4 +137,6 @@ function loadTodos() {
     todos.push(...loadedTodos);
   }
 }
+
+
 program.parse(process.argv);
