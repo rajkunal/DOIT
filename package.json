@@ -1,5 +1,5 @@
 {
-  "name": "do-it",
+  "name": "doit",
   "version": "1.0.0-beta.1",
   "description": "A CLI based handy TODOs tool for developers",
   "main": "index.js",
