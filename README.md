@@ -31,6 +31,6 @@
   doit edit [options] <index>   
   -t, --tags <new tag>  - Edit the tag  
   -task, --task <new task> - Edit the task  
-  -p, --priority <priority> - Edit the priority 
+  -p, --priority <priority> - Edit the priority  
   -c, --complete <index> - Edit task status by index    
   -d, --date <index> - Edit due date for a task by index (mm/dd/yyyy)   
